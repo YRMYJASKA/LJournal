@@ -103,8 +103,10 @@
 	)
   (progn
     (if (not (file-exists-p path))
-	(make-directory path)
-	(make-directory (concat path "/sections"))
+	(progn
+	  (make-directory path)
+	  (make-directory (concat path "/sections"))
+	)
       )
     (write-region "" nil preamble-file)
     (write-region
@@ -131,8 +133,43 @@
   "Extract abstract from project located in PATH."
   (shell-command-to-string (concat "eval echo (yq .abstract " path "/metadata.yaml)"))
   )
-(defun lj-compile-project (path)
+
+(defun lj-make-main ()
+  "Compile a chosen lJournal project."
+  (interactive)
+  (lj-make-main-at (completing-read "Choose Project: " ljournal-projects))
+  )
+(defun lj-make-main-at (path)
   "Compile project located at PATH."
+  (let (
+	(author (lj-get-author path))
+	(title (lj-get-title path))
+	(abstract (lj-get-abstract path))
+	(sections  (nthcdr 2 (directory-files (concat path "/sections"))))
+	)
+    (progn
+      (write-region (concat "\\documentclass[11pt]{article}\n\n"
+			    "\n\n"
+			    (format "\\title{%s}\n" title)
+			    (format "\\author{%s}\n" author)
+			    "\\date{\\today}\n\n"
+			    "\\input{preamble.tex}\n\n"
+			    "\\begin{document}\n"
+			    "\\maketitle\n\n"
+			    "\\begin{abstract}\n"
+			    abstract
+			    "\n\\end{abstract}\n"
+			    "\\tableofcontents\n\n"
+			    (mapconcat
+			     (lambda (d) (format "\\subfile{sections/%s}" (concat d "/" ljournal-section-filename)))
+			     sections
+			     "\n")
+			    "\n\\end{document}\n"
+			    )
+		    nil
+		    (concat path "/main.tex")) ; 
+      )
+    )
   )
 
 (provide 'ljournal)
