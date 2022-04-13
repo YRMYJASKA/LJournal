@@ -118,7 +118,7 @@
 	     "author: " ljournal-default-author "\n"
 	     "abstract: \"\"\n")
 		  nil yaml-file)
-    (cl-pushnew path ljournal-projects)
+    (cl-pushnew (f-full path) ljournal-projects)
     )
    )
   )
@@ -178,9 +178,9 @@
 
 (defun lj-locate-project-dir (path)
   "Return the closest project contained from PATH.  Return nil if none found."
-  (let ((possible-dir (find-dominating path "metadata.yaml" )))
+  (let ((possible-dir (f-full (locate-dominating-file path "metadata.yaml" ))))
     (if (member possible-dir ljournal-projects)
-	(possible-dir)
+	possible-dir
       nil)
     )
   )
@@ -189,20 +189,20 @@
 (defun lj-compile-project ()
   "Compile the project located at current working directory.  Fails if not a project directory."
   (interactive)
-  (let ((project-dir (lj-locate-project-dir default-directory)))
+  (let ((project-dir (f-full (lj-locate-project-dir default-directory))))
     (if project-dir
 	(progn
 	  (lj-make-main-at project-dir)
-	  (find-file (format "%s/main.pdf"  project-dir))
+	  (find-file (format "%s/main.tex"  project-dir))
 	  (TeX-command-master)
 	)
-      (message "Not in lJournal project!"))
+      (message nil))
     )
   )
 
 ;; TODO: create functions to delete projects.
 
 
-
 (provide 'ljournal)
+
 ;;; ljournal.el ends here
