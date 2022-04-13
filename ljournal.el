@@ -26,6 +26,7 @@
 
 ;; Requirements:
 ;; -  yq and jq for YAML parsing
+;; - tex (auctex)
 
 ;;; Code:
 
@@ -50,7 +51,7 @@
   :type 'string
   :group 'ljournal)
 
-(defcustom ljournal-config-dir "~/.config/ljournal"
+(defcustom ljournal-config-dir ""
   "Where to store skeleton configuration files."
   :type 'directory
   :group 'ljournal)
@@ -99,6 +100,9 @@
   "Create a project named NAME at PATH."
   (let (
 	(preamble-file (concat path "/" "preamble.tex"))
+	(preamble-contents (if (file-exists-p (concat ljournal-config-dir "/preamble.tex"))
+			       (f-read-text (concat ljournal-config-dir "/preamble.tex"))
+			       ""))
 	(yaml-file (concat path "/" "metadata.yaml"))
 	)
   (progn
@@ -108,7 +112,7 @@
 	  (make-directory (concat path "/sections"))
 	)
       )
-    (write-region "" nil preamble-file)
+    (write-region preamble-contents nil preamble-file)
     (write-region
      (concat "title: " name "\n"
 	     "author: " ljournal-default-author "\n"
@@ -161,7 +165,7 @@
 			    "\n\\end{abstract}\n"
 			    "\\tableofcontents\n\n"
 			    (mapconcat
-			     (lambda (d) (format "\\subfile{sections/%s}" (concat d "/" ljournal-section-filename)))
+			     (lambda (d) (format "\\input{sections/%s}" (concat d "/" ljournal-section-filename)))
 			     sections
 			     "\n")
 			    "\n\\end{document}\n"
@@ -171,6 +175,34 @@
       )
     )
   )
+
+(defun lj-locate-project-dir (path)
+  "Return the closest project contained from PATH.  Return nil if none found."
+  (let ((possible-dir (find-dominating path "metadata.yaml" )))
+    (if (member possible-dir ljournal-projects)
+	(possible-dir)
+      nil)
+    )
+  )
+
+
+(defun lj-compile-project ()
+  "Compile the project located at current working directory.  Fails if not a project directory."
+  (interactive)
+  (let ((project-dir (lj-locate-project-dir default-directory)))
+    (if project-dir
+	(progn
+	  (lj-make-main-at project-dir)
+	  (find-file (format "%s/main.pdf"  project-dir))
+	  (TeX-command-master)
+	)
+      (message "Not in lJournal project!"))
+    )
+  )
+
+;; TODO: create functions to delete projects.
+
+
 
 (provide 'ljournal)
 ;;; ljournal.el ends here
