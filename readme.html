@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>readme.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1>LJournal</h1>
+<p>A LaTeX journalling system. The system here is inspired what is outlined in a
+<a href="https://castel.dev/post/research-workflow/">blog post</a>.</p>
+<h1>Installation</h1>
+<h2>Requirements</h2>
+<ul>
+<li><code>yq</code> (via <code>python -m pip install yq</code>) and <code>jq</code> (via your package manager),</li>
+<li>AucTeX (via <code>(package-use tex)</code> or similar).</li>
+<li><code>f.el</code> </li>
+</ul>
+<h2>Downloading</h2>
+<h3>Using <code>ljournal.el</code> directly</h3>
+<ol>
+<li>Download the <code>ljournal.el</code> file in this git repo.</li>
+<li>TODO: finish this explanation.</li>
+</ol>
+<h2>Setting up</h2>
+<p>It is recommended that you define a configuration directory from which ljournal will extract
+its default preamble file from for projects. </p>
+<h1>Usage</h1>
+<p>Use <code>ljournal-create-project</code> to create a skeleton for a journalling project
+at chosen directory. Then you can add notes via <code>ljournal-add-note</code> and choosing
+the project you want. Then emacs visits the new note file which is a bare-bones
+TeX file with only a time-stamp. After done writing a note for today, 
+you can compile the project with <code>ljournal-compile-project</code> which will create a <code>main.tex</code>
+file in the root directory of the project and compile it using <code>TeX-command-master</code> to preserve
+your unique compilation commands.</p>
+<p>You can alter the title, author, and abstract in the <code>metadata.yaml</code> file for every project 
+located in their respective roots.</p>
+<h2>Structure of a lJournal projecst</h2>
+<p>The projects are structure as follows:
+```
+.
+├── main.tex              &lt;--- Main file created by compilation.
+├── metadata.yaml         &lt;--- Contains info about project such as title and author.
+├── preamble.tex          &lt;--- Copied skeleton preamble from configuration dir.
+└── sections              &lt;--- Directory containing all notes.
+     └── 2022-04-12       &lt;--- A directory for a specific day.
+        └── section.tex     &lt;--- Corresponding note for that day.
+    └── 2022-04-13
+        └── section.tex</p>
+<p>```</p>
+<h2>Configuration options</h2>
+<p>You are intended to customize these variables using <code>customize-variable</code>.</p>
+<ul>
+<li><code>ljournal-dateformat</code>: which dateformat to use for time-stamps. Implicitly also determines
+the frequency of notes taken. (default: <code>"%Y-%m-%d"</code>).</li>
+<li><code>ljournal-section-filename</code>: filename of the files created for notes. (default <code>section.tex</code>) </li>
+<li><code>ljournal-config-dir</code>: directory containing <code>preamble.tex</code> that is used as a default
+preamble file for the main pdf created by the notes. (default: <code>nil</code>)</li>
+<li><code>ljournal-projects</code>: a list of all active projects that you can add notes to. Maintained by <code>ljournal-add-project</code>. 
+If editing manually, make sure that you create the skeleton properly.
+(default: <code>nil</code>)</li>
+<li><code>ljournall-default-author</code>: pretty self-explanatory. (default: <code>""</code>)</li>
+</ul>
+</body>
+</html>

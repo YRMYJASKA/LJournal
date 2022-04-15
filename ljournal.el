@@ -3,7 +3,7 @@
 
 ;; Author: Jyry Hjelt <jh2821@ic.ac.uk>
 ;; Keywords: lisp,latex
-;; Version: 0.0.1
+;; Version: 1.0.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,10 +25,14 @@
 ;; projects with multiple files and a neat date-tree file structure.
 
 ;; Requirements:
-;; -  yq and jq for YAML parsing
+;; - yq and jq for YAML parsing
 ;; - tex (auctex)
 
 ;;; Code:
+
+;; Requirements
+(require 'tex)
+(require 'f)
 
 ;; Configuration options
 
@@ -51,7 +55,7 @@
   :type 'string
   :group 'ljournal)
 
-(defcustom ljournal-config-dir ""
+(defcustom ljournal-config-dir nil
   "Where to store skeleton configuration files."
   :type 'directory
   :group 'ljournal)
@@ -63,17 +67,18 @@
 
 
 
-;; Creating files
-(defun lj-add-note ()
+;; Main meat of the package
+
+(defun ljournal-add-note ()
   "Create a note for today in specified project."
   (interactive)
   (let
-      ((lj-chosen-project (completing-read "Choose Project: " ljournal-projects))
-       (lj-today-date (format-time-string ljournal-dateformat)))
-    (lj-add-or-modify-note-at-proj lj-chosen-project lj-today-date)
+      ((ljournal-chosen-project (completing-read "Choose Project: " ljournal-projects))
+       (ljournal-today-date (format-time-string ljournal-dateformat)))
+    (ljournal-add-or-modify-note-at-proj ljournal-chosen-project ljournal-today-date)
     ))
 
-(defun lj-add-or-modify-note-at-proj (projdir date)
+(defun ljournal-add-or-modify-note-at-proj (projdir date)
   "Add a note at specified directory named PROJDIR under DATE."
   (let ((dir (concat projdir "/sections/" date))
 	(filename (concat projdir "/sections/" date "/" ljournal-section-filename)))
@@ -90,13 +95,13 @@
    )
   )
 
-(defun lj-create-project ()
+(defun ljournal-create-project ()
   "Create a project."
   (interactive)
-  (lj-create-project-at (read-directory-name "Project location: ") (read-string "Project name: "))
+  (ljournal-create-project-at (read-directory-name "Project location: ") (read-string "Project name: "))
   )
 
-(defun lj-create-project-at (path name)
+(defun ljournal-create-project-at (path name)
   "Create a project named NAME at PATH."
   (let (
 	(preamble-file (concat path "/" "preamble.tex"))
@@ -123,32 +128,32 @@
    )
   )
 
-(defun lj-get-author (path)
+(defun ljournal-get-author (path)
   "Extract author from project located in PATH."
   (shell-command-to-string (concat "eval echo (yq .author " path "/metadata.yaml)"))
   )
 
-(defun lj-get-title (path)
+(defun ljournal-get-title (path)
   "Extract title from project located in PATH."
   (shell-command-to-string (concat "eval echo (yq .title " path "/metadata.yaml)"))
   )
 
-(defun lj-get-abstract (path)
+(defun ljournal-get-abstract (path)
   "Extract abstract from project located in PATH."
   (shell-command-to-string (concat "eval echo (yq .abstract " path "/metadata.yaml)"))
   )
 
-(defun lj-make-main ()
+(defun ljournal-make-main ()
   "Compile a chosen lJournal project."
   (interactive)
-  (lj-make-main-at (completing-read "Choose Project: " ljournal-projects))
+  (ljournal-make-main-at (completing-read "Choose Project: " ljournal-projects))
   )
-(defun lj-make-main-at (path)
+(defun ljournal-make-main-at (path)
   "Compile project located at PATH."
   (let (
-	(author (lj-get-author path))
-	(title (lj-get-title path))
-	(abstract (lj-get-abstract path))
+	(author (ljournal-get-author path))
+	(title (ljournal-get-title path))
+	(abstract (ljournal-get-abstract path))
 	(sections  (nthcdr 2 (directory-files (concat path "/sections"))))
 	)
     (progn
@@ -176,7 +181,7 @@
     )
   )
 
-(defun lj-locate-project-dir (path)
+(defun ljournal-locate-project-dir (path)
   "Return the closest project contained from PATH.  Return nil if none found."
   (let ((possible-dir (f-full (locate-dominating-file path "metadata.yaml" ))))
     (if (member possible-dir ljournal-projects)
@@ -186,13 +191,13 @@
   )
 
 
-(defun lj-compile-project ()
+(defun ljournal-compile-project ()
   "Compile the project located at current working directory.  Fails if not a project directory."
   (interactive)
-  (let ((project-dir (f-full (lj-locate-project-dir default-directory))))
+  (let ((project-dir (f-full (ljournal-locate-project-dir default-directory))))
     (if project-dir
 	(progn
-	  (lj-make-main-at project-dir)
+	  (ljournal-make-main-at project-dir)
 	  (find-file (format "%s/main.tex"  project-dir))
 	  (TeX-command-master)
 	)
@@ -200,7 +205,8 @@
     )
   )
 
-;; TODO: create functions to delete projects.
+
+; TODO: create functions to delete projects.
 
 
 (provide 'ljournal)
