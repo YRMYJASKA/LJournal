@@ -27,6 +27,7 @@
 ;; Requirements:
 ;; - yq and jq for YAML parsing
 ;; - tex (auctex)
+;; - f.el
 
 ;;; Code:
 
