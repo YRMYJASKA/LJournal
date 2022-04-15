@@ -121,8 +121,8 @@
     (write-region preamble-contents nil preamble-file)
     (write-region
      (concat "title: " name "\n"
-	     "author: " ljournal-default-author "\n"
-	     "abstract: \"\"\n")
+	     "author: \"" ljournal-default-author "\"\n"
+	     "abstract:\n")
 		  nil yaml-file)
     (cl-pushnew (f-full path) ljournal-projects)
     )
@@ -131,17 +131,17 @@
 
 (defun ljournal-get-author (path)
   "Extract author from project located in PATH."
-  (shell-command-to-string (concat "eval echo (yq .author " path "/metadata.yaml)"))
+  (string-trim (shell-command-to-string (concat "eval echo (yq .author " path "/metadata.yaml)")))
   )
 
 (defun ljournal-get-title (path)
   "Extract title from project located in PATH."
-  (shell-command-to-string (concat "eval echo (yq .title " path "/metadata.yaml)"))
+  (string-trim (shell-command-to-string (concat "eval echo (yq .title " path "/metadata.yaml)")))
   )
 
 (defun ljournal-get-abstract (path)
   "Extract abstract from project located in PATH."
-  (shell-command-to-string (concat "eval echo (yq .abstract " path "/metadata.yaml)"))
+  (string-trim (shell-command-to-string (concat "eval echo (yq .abstract " path "/metadata.yaml)")))
   )
 
 (defun ljournal-make-main ()
@@ -166,9 +166,13 @@
 			    "\\input{preamble.tex}\n\n"
 			    "\\begin{document}\n"
 			    "\\maketitle\n\n"
-			    "\\begin{abstract}\n"
-			    abstract
-			    "\n\\end{abstract}\n"
+			    (if (string-equal abstract "null")
+				""
+			      (concat
+			       "\\begin{abstract}\n"
+			       abstract
+			       "\n\\end{abstract}\n"
+			    ))
 			    "\\tableofcontents\n\n"
 			    (mapconcat
 			     (lambda (d) (format "\\input{sections/%s}" (concat d "/" ljournal-section-filename)))
