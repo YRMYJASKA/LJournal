@@ -1,7 +1,7 @@
 ;; LJournal --- Date-tree oriented LaTex projects
 ;; Copyright (C) 2022  Jyry "Yrmyjaska" Hjelt
 
-;; Author: Jyry Hjelt <jh2821@ic.ac.uk>
+;; Author: Jyry Hjelt <jh2821 (at) ic.ac.uk>
 ;; Keywords: lisp,latex
 ;; Version: 1.0.0
 
